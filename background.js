@@ -19,7 +19,7 @@ var slowSwitchForward = false;
 
 var initialized = false;
 
-var loggingOn = true;
+var loggingOn = false;
 
 var OLTlog = function (str) {
     if (loggingOn) {
@@ -29,12 +29,12 @@ var OLTlog = function (str) {
 
 function onInstall() {
     OLTlog("Extension Installed");
-    //chrome.windows.create({url:"http://www.harshay-buradkar.com/clut_update6.html"});
+    //chrome.windows.create({url:"http://url/installed.html"});
 }
 
 function onUpdate() {
     OLTlog("Extension Updated");
-    //chrome.windows.create({url:"http://www.harshay-buradkar.com/clut_update6.html"});
+    //chrome.windows.create({url:"http://url/updated.html"});
 }
 
 function getVersion() {
@@ -309,7 +309,6 @@ var printMRUSimple = function () {
 
 var generatePrintMRUString = function () {
     chrome.tabs.query(function () {
-
     });
     str += (i + " :(" + tab.id + ")" + tab.title);
     str += "\n";
@@ -326,7 +325,6 @@ var quickSwitchActiveUsage = function () {
         } else if (quickActive < 5) {
             quickActive++;
         } else if (quickActive >= 5) {
-            _gaq.push(['_trackEvent', 'activeUsage', 'quick']);
             quickActive = -1;
         }
     }
@@ -340,7 +338,6 @@ var slowSwitchActiveUsage = function () {
         } else if (slowActive < 5) {
             slowActive++;
         } else if (slowActive >= 5) {
-            _gaq.push(['_trackEvent', 'activeUsage', 'slow']);
             slowActive = -1;
         }
     }

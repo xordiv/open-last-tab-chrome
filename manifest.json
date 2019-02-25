@@ -21,10 +21,10 @@
   "commands": {
     "alt_switch_fast": {
       "suggested_key": {  
-        "default": "Alt+W",
-        "mac": "Alt+W"
+        "default": "Alt+Q",
+        "mac": "Alt+Q"
       },
-      "description": "Quick switch - Use to switch quickly among last 2 to 4 tabs. (Suggested: Alt+W)"
+      "description": "Quick switch - Use to switch quickly among last 2 to 4 tabs. (Suggested: Alt+Q)"
     },
 
     "alt_switch_slow_backward": {
