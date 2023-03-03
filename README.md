@@ -5,7 +5,7 @@ Chrome Webstore: https://chrome.google.com/webstore/detail/open-last-tab/naolncc
 Helps jump between last used tabs by keyboard shortcut in Chrome, 
 Yandex Browser and other Chromium-based browsers.
 
-Default shortcut: Alt + Q
+Default shortcut: **Alt + Q**
 
 Based on clut-chrome-extension 
 (https://github.com/harshayburadkar/clut-chrome-extension / MIT License),
