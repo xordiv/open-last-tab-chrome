@@ -29,4 +29,7 @@ https://github.com/xordiv/open-last-tab-chrome
 *ALT + Shift + S*: Normal switch (in opposite direction)\
 *Keys can be changed in keyboard shortcut settings on the Chrome extensions page.
 
-Reviews, Support, Questions and Answers: https://soft.mydiv.net/win/download-Open-Last-Tab.html
+Reviews, Support, Questions and Answers: 
+- https://soft.mydiv.net/win/download-Open-Last-Tab.html (На русском)
+- https://soft.mydiv.org/win/download-Open-Last-Tab.html (In English)
+
