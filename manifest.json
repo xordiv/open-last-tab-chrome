@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "default_locale": "en",
   "name": "Open Last Tab",
   "short_name": "OLT",
@@ -8,16 +8,14 @@
   "permissions": [
     "tabs"
   ],
-  "content_security_policy": "script-src 'self'; object-src 'self'",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",
     "128": "icon128.png"
   },
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "service_worker": "background.js",
+    "type": "module"
   },
   "commands": {
     "alt_switch_fast": {
@@ -42,12 +40,5 @@
       "description": "__MSG_alt_switch_slow_forward_description__"
     }
   },
-  "browser_action": {
-    "default_title": "__MSG_title__",
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
-  }
+  "action": {}
 }
