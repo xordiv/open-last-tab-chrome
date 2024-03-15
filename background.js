@@ -19,7 +19,7 @@ var slowSwitchForward = false;
 
 var initialized = false;
 
-var loggingOn = false;
+var loggingOn = true;
 
 var OLTlog = function (str) {
     if (loggingOn) {
@@ -118,7 +118,6 @@ var doIntSwitch = function () {
         var tabIdToMakeActive;
         //check if tab is still present
         //sometimes tabs have gone missing
-        var invalidTab = true;
         var thisWindowId;
         if (slowSwitchForward) {
             decrementSwitchCounter();
@@ -129,7 +128,6 @@ var doIntSwitch = function () {
         chrome.tabs.get(tabIdToMakeActive, function (tab) {
             if (tab) {
                 thisWindowId = tab.windowId;
-                invalidTab = false;
 
                 chrome.windows.update(thisWindowId, { "focused": true });
                 chrome.tabs.update(tabIdToMakeActive, { active: true, highlighted: true });
