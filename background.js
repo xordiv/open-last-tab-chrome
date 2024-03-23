@@ -6,7 +6,6 @@ var lastIntSwitchIndex = 0;
 var altPressed = false;
 var wPressed = false;
 
-var isDomLoaded = false
 var quickActive = 0;
 var slowActive = 0;
 
@@ -19,7 +18,7 @@ var slowSwitchForward = false;
 
 var initialized = false;
 
-var loggingOn = true;
+var loggingOn = false;
 
 var OLTlog = function (str) {
     if (loggingOn) {
@@ -111,7 +110,6 @@ chrome.runtime.onInstalled.addListener(function () {
 
 });
 
-
 var doIntSwitch = function () {
     OLTlog("OLT:: in int switch, intSwitchCount: " + intSwitchCount + ", mru.length: " + mru.length);
     if (intSwitchCount < mru.length && intSwitchCount >= 0) {
@@ -132,7 +130,6 @@ var doIntSwitch = function () {
                 chrome.windows.update(thisWindowId, { "focused": true });
                 chrome.tabs.update(tabIdToMakeActive, { active: true, highlighted: true });
                 lastIntSwitchIndex = intSwitchCount;
-                //break;
             } else {
                 OLTlog("OLT:: in int switch, >>invalid tab found.intSwitchCount: " + intSwitchCount + ", mru.length: " + mru.length);
                 removeItemAtIndexFromMRU(intSwitchCount);
@@ -207,7 +204,7 @@ var addTabToMRUAtBack = function (tabId) {
         //add to the end of mru
         mru.splice(-1, 0, tabId);
     }
-
+    saveMRU();
 };
 
 var addTabToMRUAtFront = function (tabId) {
@@ -217,7 +214,7 @@ var addTabToMRUAtFront = function (tabId) {
         //add to the front of mru
         mru.splice(0, 0, tabId);
     }
-
+    saveMRU();
 };
 
 var putExistingTabToTop = function (tabId) {
@@ -226,6 +223,7 @@ var putExistingTabToTop = function (tabId) {
         mru.splice(index, 1);
         mru.unshift(tabId);
     }
+    saveMRU();
 };
 
 var removeTabFromMRU = function (tabId) {
@@ -233,12 +231,14 @@ var removeTabFromMRU = function (tabId) {
     if (index != -1) {
         mru.splice(index, 1);
     }
+    saveMRU();
 };
 
 var removeItemAtIndexFromMRU = function (index) {
     if (index < mru.length) {
         mru.splice(index, 1);
     }
+    saveMRU();
 };
 
 var incrementSwitchCounter = function () {
@@ -253,16 +253,38 @@ var decrementSwitchCounter = function () {
     }
 };
 
+var saveMRU = function () {
+    chrome.storage.local.set({ 'MRU': mru });
+}
+
 var initialize = function () {
     if (!initialized) {
         initialized = true;
-        chrome.windows.getAll({ populate: true }, function (windows) {
-            windows.forEach(function (window) {
-                window.tabs.forEach(function (tab) {
-                    mru.unshift(tab.id);
+
+        chrome.storage.local.get("MRU", function (result) {
+            let savedMRU = []
+            if (result["MRU"] != null) {
+                savedMRU = result["MRU"];
+            }
+
+            let allTabs = new Set();
+            chrome.windows.getAll({ populate: true }, function (windows) {
+                windows.forEach(function (window) {
+                    window.tabs.forEach(function (tab) {
+                        allTabs.add(tab.id);
+                    });
                 });
+                for (const tabId of savedMRU) {
+                    if (allTabs.has(tabId)) {
+                        mru.push(tabId);
+                        allTabs.delete(tabId);
+                    }
+                }
+                mru = mru.concat(...allTabs);
+                saveMRU();
+
+                OLTlog("MRU after init: " + mru);
             });
-            OLTlog("MRU after init: " + mru);
         });
     }
 };
@@ -275,27 +297,8 @@ var printTabInfo = function (tabId) {
     return info;
 };
 
-var str = "MRU status: \n";
-var printMRU = function () {
-    str = "MRU status: \n";
-    for (var i = 0; i < mru.length; i++) {
-        chrome.tabs.get(mru[i], function (tab) {
-
-        });
-    }
-    OLTlog(str);
-};
-
 var printMRUSimple = function () {
     OLTlog("mru: " + mru);
-};
-
-var generatePrintMRUString = function () {
-    chrome.tabs.query(function () {
-    });
-    str += (i + " :(" + tab.id + ")" + tab.title);
-    str += "\n";
-
 };
 
 initialize();
