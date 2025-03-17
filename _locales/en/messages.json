@@ -1,7 +1,17 @@
 {
-  "description": { "message": "Cycle through last used Chrome tabs using keyboard shortcut (Alt+Q)." },
-  "alt_switch_fast_description" : {"message":  "Switch quickly among last 2 to 4 tabs. (Suggested: Alt+Q)"},
-  "alt_switch_slow_backward_description" : {"message":  "Switch backward (Suggested: Alt+S)"},
-  "alt_switch_slow_forward_description" : {"message":  "Switch forward (Suggested: Alt+Shift+S)"},
-  "title": { "message": "Open Last TAB" }
+  "description": {
+    "message": "Cycle through last used Chrome tabs using keyboard shortcut (Alt+Q)."
+  },
+  "alt_switch_fast_description": {
+    "message": "Switch quickly among last 2. (Suggested: Alt+Q)"
+  },
+  "alt_switch_slow_backward_description": {
+    "message": "Switch backward (Suggested: Alt+S)"
+  },
+  "alt_switch_slow_forward_description": {
+    "message": "Switch forward (Suggested: Alt+Shift+S)"
+  },
+  "title": {
+    "message": "Open Last TAB"
+  }
 }

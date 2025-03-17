@@ -6,7 +6,6 @@ var lastIntSwitchIndex = 0;
 var altPressed = false;
 var wPressed = false;
 
-var isDomLoaded = false
 var quickActive = 0;
 var slowActive = 0;
 
@@ -26,37 +25,6 @@ var OLTlog = function (str) {
         console.log(str);
     }
 };
-
-function onInstall() {
-    OLTlog("Extension Installed");
-    //chrome.windows.create({url:"http://url/installed.html"});
-}
-
-function onUpdate() {
-    OLTlog("Extension Updated");
-    //chrome.windows.create({url:"http://url/updated.html"});
-}
-
-function getVersion() {
-    var details = chrome.app.getDetails();
-    return details.version;
-}
-
-// Check if the version has changed.
-var currVersion = getVersion();
-var prevVersion = localStorage['version']
-OLTlog("prev version: " + prevVersion);
-OLTlog("curr version: " + currVersion);
-
-if (currVersion != prevVersion) {
-// Check if we just installed this extension.
-    if (typeof prevVersion == 'undefined') {
-        onInstall();
-    } else {
-        onUpdate();
-    }
-    localStorage['version'] = currVersion;
-}
 
 var processCommand = function (command) {
     OLTlog('Command recd:' + command);
@@ -125,10 +93,9 @@ var processCommand = function (command) {
 
 chrome.commands.onCommand.addListener(processCommand);
 
-chrome.browserAction.onClicked.addListener(function (tab) {
+chrome.action.onClicked.addListener(function (tab) {
     OLTlog('Click recd');
     processCommand('alt_switch_fast');
-
 });
 
 chrome.runtime.onStartup.addListener(function () {
@@ -143,14 +110,12 @@ chrome.runtime.onInstalled.addListener(function () {
 
 });
 
-
 var doIntSwitch = function () {
     OLTlog("OLT:: in int switch, intSwitchCount: " + intSwitchCount + ", mru.length: " + mru.length);
     if (intSwitchCount < mru.length && intSwitchCount >= 0) {
         var tabIdToMakeActive;
         //check if tab is still present
         //sometimes tabs have gone missing
-        var invalidTab = true;
         var thisWindowId;
         if (slowSwitchForward) {
             decrementSwitchCounter();
@@ -161,12 +126,10 @@ var doIntSwitch = function () {
         chrome.tabs.get(tabIdToMakeActive, function (tab) {
             if (tab) {
                 thisWindowId = tab.windowId;
-                invalidTab = false;
 
-                chrome.windows.update(thisWindowId, {"focused": true});
-                chrome.tabs.update(tabIdToMakeActive, {active: true, highlighted: true});
+                chrome.windows.update(thisWindowId, { "focused": true });
+                chrome.tabs.update(tabIdToMakeActive, { active: true, highlighted: true });
                 lastIntSwitchIndex = intSwitchCount;
-                //break;
             } else {
                 OLTlog("OLT:: in int switch, >>invalid tab found.intSwitchCount: " + intSwitchCount + ", mru.length: " + mru.length);
                 removeItemAtIndexFromMRU(intSwitchCount);
@@ -192,18 +155,7 @@ var endSwitch = function () {
 };
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-    if (!slowSwitchOngoing && !fastSwitchOngoing) {
-        var index = mru.indexOf(activeInfo.tabId);
-
-        //probably should not happen since tab created gets called first than activated for new tabs,
-        // but added as a backup behavior to avoid orphan tabs
-        if (index == -1) {
-            OLTlog("Unexpected scenario hit with tab(" + activeInfo.tabId + ").")
-            addTabToMRUAtFront(activeInfo.tabId)
-        } else {
-            putExistingTabToTop(activeInfo.tabId);
-        }
-    }
+    trackActiveTab(activeInfo.tabId);
 });
 
 chrome.tabs.onCreated.addListener(function (tab) {
@@ -216,6 +168,35 @@ chrome.tabs.onRemoved.addListener(function (tabId, removedInfo) {
     removeTabFromMRU(tabId);
 });
 
+chrome.windows.onFocusChanged.addListener(function (windowId) {
+    OLTlog("Window focus event fired from(" + windowId + ")");
+    if (windowId != chrome.windows.WINDOW_ID_NONE) {
+        let queryOptions = { active: true, lastFocusedWindow: true };
+        chrome.tabs.query(queryOptions, ([tab]) => {
+            if (!chrome.runtime.lastError) {
+                trackActiveTab(tab.id);
+            }
+        });
+    }
+
+}, { windowTypes: ['normal'] });
+
+var trackActiveTab = function (tabId) {
+    if (!slowSwitchOngoing && !fastSwitchOngoing) {
+        OLTlog("Tracking active tab(" + tabId + ").");
+        var index = mru.indexOf(tabId);
+
+        //probably should not happen since tab created gets called first than activated for new tabs,
+        // but added as a backup behavior to avoid orphan tabs
+        if (index == -1) {
+            OLTlog("Unexpected scenario hit with tab(" + tabId + ").")
+            addTabToMRUAtFront(tabId)
+        } else {
+            putExistingTabToTop(tabId);
+        }
+    }
+}
+
 
 var addTabToMRUAtBack = function (tabId) {
 
@@ -224,7 +205,7 @@ var addTabToMRUAtBack = function (tabId) {
         //add to the end of mru
         mru.splice(-1, 0, tabId);
     }
-
+    saveMRU();
 };
 
 var addTabToMRUAtFront = function (tabId) {
@@ -234,7 +215,7 @@ var addTabToMRUAtFront = function (tabId) {
         //add to the front of mru
         mru.splice(0, 0, tabId);
     }
-
+    saveMRU();
 };
 
 var putExistingTabToTop = function (tabId) {
@@ -243,6 +224,7 @@ var putExistingTabToTop = function (tabId) {
         mru.splice(index, 1);
         mru.unshift(tabId);
     }
+    saveMRU();
 };
 
 var removeTabFromMRU = function (tabId) {
@@ -250,12 +232,14 @@ var removeTabFromMRU = function (tabId) {
     if (index != -1) {
         mru.splice(index, 1);
     }
+    saveMRU();
 };
 
 var removeItemAtIndexFromMRU = function (index) {
     if (index < mru.length) {
         mru.splice(index, 1);
     }
+    saveMRU();
 };
 
 var incrementSwitchCounter = function () {
@@ -270,16 +254,38 @@ var decrementSwitchCounter = function () {
     }
 };
 
+var saveMRU = function () {
+    chrome.storage.local.set({ 'MRU': mru });
+}
+
 var initialize = function () {
     if (!initialized) {
         initialized = true;
-        chrome.windows.getAll({populate: true}, function (windows) {
-            windows.forEach(function (window) {
-                window.tabs.forEach(function (tab) {
-                    mru.unshift(tab.id);
+
+        chrome.storage.local.get("MRU", function (result) {
+            let savedMRU = []
+            if (result["MRU"] != null) {
+                savedMRU = result["MRU"];
+            }
+
+            let allTabs = new Set();
+            chrome.windows.getAll({ populate: true, windowTypes: ['normal'] }, function (windows) {
+                windows.forEach(function (window) {
+                    window.tabs.forEach(function (tab) {
+                        allTabs.add(tab.id);
+                    });
                 });
+                for (const tabId of savedMRU) {
+                    if (allTabs.has(tabId)) {
+                        mru.push(tabId);
+                        allTabs.delete(tabId);
+                    }
+                }
+                mru = mru.concat(...allTabs);
+                saveMRU();
+
+                OLTlog("MRU after init: " + mru);
             });
-            OLTlog("MRU after init: " + mru);
         });
     }
 };
@@ -292,57 +298,28 @@ var printTabInfo = function (tabId) {
     return info;
 };
 
-var str = "MRU status: \n";
-var printMRU = function () {
-    str = "MRU status: \n";
-    for (var i = 0; i < mru.length; i++) {
-        chrome.tabs.get(mru[i], function (tab) {
-
-        });
-    }
-    OLTlog(str);
-};
-
 var printMRUSimple = function () {
     OLTlog("mru: " + mru);
-};
-
-var generatePrintMRUString = function () {
-    chrome.tabs.query(function () {
-    });
-    str += (i + " :(" + tab.id + ")" + tab.title);
-    str += "\n";
-
 };
 
 initialize();
 
 var quickSwitchActiveUsage = function () {
-
-    if (isDomLoaded) {
-        if (quickActive == -1) {
-            return;
-        } else if (quickActive < 5) {
-            quickActive++;
-        } else if (quickActive >= 5) {
-            quickActive = -1;
-        }
+    if (quickActive == -1) {
+        return;
+    } else if (quickActive < 5) {
+        quickActive++;
+    } else if (quickActive >= 5) {
+        quickActive = -1;
     }
 };
 
 var slowSwitchActiveUsage = function () {
-
-    if (isDomLoaded) {
-        if (slowActive == -1) {
-            return;
-        } else if (slowActive < 5) {
-            slowActive++;
-        } else if (slowActive >= 5) {
-            slowActive = -1;
-        }
+    if (slowActive == -1) {
+        return;
+    } else if (slowActive < 5) {
+        slowActive++;
+    } else if (slowActive >= 5) {
+        slowActive = -1;
     }
 };
-
-document.addEventListener('DOMContentLoaded', function () {
-    isDomLoaded = true;
-});

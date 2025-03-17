@@ -1,7 +1,17 @@
 {
-  "description": { "message": "Легкий переход между последними использованными вкладками по горячей клавише (Alt+Q)." },
-  "alt_switch_fast_description" : {"message":  "Переход между последними 2 - 4 вкладками. (Совет: Alt+Q)"},
-  "alt_switch_slow_backward_description" : {"message":  "Переключение назад. (Совет: Alt+S)"},
-  "alt_switch_slow_forward_description" : {"message":  "Переключение вперед. (Совет: Alt+Shift+S)"},
-  "title": { "message": "Open Last TAB" }
+  "description": {
+    "message": "Легкий переход между последними использованными вкладками по горячей клавише (Alt+Q)."
+  },
+  "alt_switch_fast_description": {
+    "message": "Переход между последними 2 вкладками. (Совет: Alt+Q)"
+  },
+  "alt_switch_slow_backward_description": {
+    "message": "Переключение назад. (Совет: Alt+S)"
+  },
+  "alt_switch_slow_forward_description": {
+    "message": "Переключение вперед. (Совет: Alt+Shift+S)"
+  },
+  "title": {
+    "message": "Open Last TAB"
+  }
 }
